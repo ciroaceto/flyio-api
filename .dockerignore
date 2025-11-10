@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+dist
+frontend/dist
+frontend/node_modules
+*.db
+*.log
+.git
+.gitignore
+README.md
+DEPLOYMENT.md
+deploy.sh
+.vscode
+.idea
+
