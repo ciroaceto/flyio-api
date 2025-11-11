@@ -51,8 +51,9 @@ flyctl secrets set API_KEY=your-secret-api-key
 ## Project Structure
 
 ```
-├── server.ts          # Express backend server
-├── database.ts        # SQLite database setup
+├── backend/           # Backend TypeScript files
+│   ├── server.ts     # Express backend server
+│   └── database.ts   # SQLite database setup
 ├── frontend/          # React frontend application
 │   ├── src/          # React source files
 │   └── dist/         # Built frontend (generated)

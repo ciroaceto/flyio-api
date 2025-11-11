@@ -13,7 +13,7 @@ RUN apk update && apk upgrade --no-cache
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
-COPY *.ts ./
+COPY backend/*.ts ./backend/
 COPY tsconfig.json ./
 RUN npm run build
 
