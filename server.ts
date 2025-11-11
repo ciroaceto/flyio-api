@@ -107,11 +107,6 @@ app.post('/api/callsdata', async (req: Request, res: Response) => {
   try {
     const { id, duration, mc_number, final_offer, final_counter_offer, offer_iterations, successful, sentiment } = req.body;
 
-    let normalizedSuccessful = successful;
-    if (typeof successful === 'string') {
-      normalizedSuccessful = successful === 'Success';
-    }
-    
     // Validate required fields
     if (id === undefined || duration === undefined || mc_number === undefined || 
         final_offer === undefined || final_counter_offer === undefined || 
@@ -120,27 +115,50 @@ app.post('/api/callsdata', async (req: Request, res: Response) => {
       return;
     }
 
-    // Validate types
-    if (typeof id !== 'string' || typeof duration !== 'number' || typeof mc_number !== 'number' ||
-        typeof final_offer !== 'number' || typeof final_counter_offer !== 'number' ||
-        typeof offer_iterations !== 'number' || typeof normalizedSuccessful !== 'boolean' || typeof sentiment !== 'string') {
-      res.status(400).json({ error: 'Invalid field types: id and sentiment must be strings, duration, mc_number, final_offer, final_counter_offer, and offer_iterations must be numbers, and successful must be a boolean' });
+    // Convert string inputs to appropriate data types
+    // Convert id to string
+    const normalizedId = String(id);
+    
+    // Convert numeric fields from strings to numbers
+    const normalizedDuration = typeof duration === 'string' ? Number(duration) : duration;
+    const normalizedMcNumber = typeof mc_number === 'string' ? Number(mc_number) : mc_number;
+    const normalizedFinalOffer = typeof final_offer === 'string' ? Number(final_offer) : final_offer;
+    const normalizedFinalCounterOffer = typeof final_counter_offer === 'string' ? Number(final_counter_offer) : final_counter_offer;
+    const normalizedOfferIterations = typeof offer_iterations === 'string' ? Number(offer_iterations) : offer_iterations;
+    
+    // Convert successful to boolean (handle both string and boolean inputs)
+    let normalizedSuccessful: boolean;
+    if (typeof successful === 'string') {
+      const lowerSuccess = successful.toLowerCase();
+      normalizedSuccessful = lowerSuccess === 'success';
+    } else {
+      res.status(400).json({ error: 'Invalid field type: successful must be a string' });
+      return;
+    }
+    
+    // Convert sentiment to string
+    const normalizedSentiment = String(sentiment);
+
+    // Validate converted types
+    if (isNaN(normalizedDuration) || isNaN(normalizedMcNumber) || isNaN(normalizedFinalOffer) || 
+        isNaN(normalizedFinalCounterOffer) || isNaN(normalizedOfferIterations)) {
+      res.status(400).json({ error: 'Invalid numeric values: duration, mc_number, final_offer, final_counter_offer, and offer_iterations must be valid numbers' });
       return;
     }
 
     // Insert call data into database
     await insertCall({
-      id,
-      duration,
-      mc_number,
-      final_offer,
-      final_counter_offer,
-      offer_iterations,
+      id: normalizedId,
+      duration: normalizedDuration,
+      mc_number: normalizedMcNumber,
+      final_offer: normalizedFinalOffer,
+      final_counter_offer: normalizedFinalCounterOffer,
+      offer_iterations: normalizedOfferIterations,
       successful: normalizedSuccessful,
-      sentiment
+      sentiment: normalizedSentiment
     });
 
-    res.status(201).json({ message: 'Call data saved successfully', id });
+    res.status(201).json({ message: 'Call data saved successfully', id: normalizedId });
   } catch (error) {
     console.error('Error saving call data:', error);
     res.status(500).json({ error: 'Internal server error' });
